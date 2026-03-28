@@ -33,7 +33,3 @@ coverage/
 
 # Misc
 *.local
-
-# Config folders
-config/
-**/config/
