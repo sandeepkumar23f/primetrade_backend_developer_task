@@ -2,46 +2,59 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
+
+// ✅ Types
+interface UserData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message?: string;
+}
 
 export default function SignUp() {
   const router = useRouter();
 
-  const [userData, setUserData] = useState({
+  const [userData, setUserData] = useState<UserData>({
     name: "",
     email: "",
     password: "",
-    appPassword: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
-  const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const API =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserData({
-      ...userData,
-      [e.target.name]: e.target.value,
-    });
+  // ✅ Typed change handler (NO ANY)
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+
+    setUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const validateEmail = (email: string) => {
+  const validateEmail = (email: string): boolean => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (): Promise<void> => {
+    if (loading) return; // ✅ prevent spam clicks
+
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (
-      !userData.name ||
-      !userData.email ||
-      !userData.password ||
-      !userData.appPassword
-    ) {
+    // ✅ Validation
+    if (!userData.name || !userData.email || !userData.password) {
       setErrorMessage("All fields are required");
       return;
     }
@@ -56,35 +69,37 @@ export default function SignUp() {
       return;
     }
 
-    if (userData.appPassword.length < 16) {
-      setErrorMessage("Enter valid Gmail App Password");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const res = await fetch(`${API}/api/v1/auth/signup`, {
+      const res = await fetch(`${API}/api/v1/auth/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
         body: JSON.stringify(userData),
       });
 
-      const result = await res.json();
+      const data: ApiResponse = await res.json();
 
-      if (res.ok && result.success) {
-        setSuccessMessage("Account created successfully");
+      if (!res.ok) {
+        throw new Error(data.message || "Signup failed");
+      }
+
+      if (data.success) {
+        setSuccessMessage("Account created successfully 🚀");
 
         setTimeout(() => {
           router.push("/dashboard");
-        }, 1000);
-      } else {
-        setErrorMessage(result.message || "Signup failed");
+        }, 800);
       }
-    } catch (error) {
-      console.error("Signup error:", error);
-      setErrorMessage("Server error. Please try again.");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -104,10 +119,15 @@ export default function SignUp() {
           </h1>
 
           {errorMessage && (
-            <p className="text-red-500 text-sm text-center mb-2">{errorMessage}</p>
+            <p className="text-red-500 text-sm text-center mb-2">
+              {errorMessage}
+            </p>
           )}
+
           {successMessage && (
-            <p className="text-green-600 text-sm text-center mb-2">{successMessage}</p>
+            <p className="text-green-600 text-sm text-center mb-2">
+              {successMessage}
+            </p>
           )}
 
           <div className="mb-4">
@@ -146,27 +166,10 @@ export default function SignUp() {
             />
           </div>
 
-          {/* NEW FIELD */}
-
-          <div className="mb-4">
-            <label>Gmail App Password</label>
-            <input
-              name="appPassword"
-              value={userData.appPassword}
-              onChange={handleChange}
-              type="password"
-              placeholder="Enter 16-digit Gmail App Password"
-              className="w-full h-10 border rounded-md px-3"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Generate this from Google → Security → App Passwords
-            </p>
-          </div>
-
           <button
             onClick={handleSignUp}
             disabled={loading}
-            className="w-full h-10 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            className="w-full h-10 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:opacity-50"
           >
             {loading ? "Creating account..." : "Sign Up"}
           </button>

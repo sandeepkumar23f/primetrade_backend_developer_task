@@ -15,7 +15,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
+  
   const API =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
@@ -62,7 +62,7 @@ export default function Login() {
           localStorage.setItem("token", result.token);
         }
 
-        setSuccessMessage("Login successful 🎉 Redirecting...");
+        setSuccessMessage("Login successful Redirecting...");
 
         setTimeout(() => {
           router.push("/dashboard"); 

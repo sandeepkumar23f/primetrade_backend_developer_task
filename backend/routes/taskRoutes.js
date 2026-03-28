@@ -1,15 +1,15 @@
 // routes/taskRoutes.js
 import express from "express";
 import { createTask, getTasks, getTask, updateTask, deleteTask } from "../controllers/taskController.js";
-import { verifyJWTToken, authorizeRoles } from "../middleware/authMiddleware.js";
+import verifyJWTToken from "../middleware/verifyJWTToken.js";
 
 const router = express.Router();
 
 // API versioning
-router.post("/v1/tasks", verifyJWTToken, createTask);
-router.get("/v1/tasks", verifyJWTToken, getTasks);
-router.get("/v1/tasks/:id", verifyJWTToken, getTask);
-router.put("/v1/tasks/:id", verifyJWTToken, updateTask);
-router.delete("/v1/tasks/:id", verifyJWTToken, authorizeRoles("admin"), deleteTask); 
+router.post("/", verifyJWTToken, createTask);
+router.get("/", verifyJWTToken, getTasks);
+router.get("/:id", verifyJWTToken, getTask);
+router.put("/:id", verifyJWTToken, updateTask);
+router.delete("/:id", verifyJWTToken,  deleteTask); 
 
 export default router;

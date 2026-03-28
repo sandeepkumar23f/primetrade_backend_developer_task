@@ -12,7 +12,7 @@ export const createTask = async (req, res) => {
     }
 
     const db = await connection();
-    const task = { title, description, status: "pending", userId: new ObjectId(req.user._id), createdAt: new Date(), updatedAt: new Date() };
+    const task = { title, description, status: "pending", userId: new ObjectId(req.user.id), createdAt: new Date(), updatedAt: new Date() };
     const result = await db.collection(collectionName).insertOne(task);
 
     if (result.acknowledged) res.status(201).json({ success: true, message: "Task created", task });
@@ -26,7 +26,7 @@ export const createTask = async (req, res) => {
 export const getTasks = async (req, res) => {
   try {
     const db = await connection();
-    const filter = req.user.role === "admin" ? {} : { userId: new ObjectId(req.user._id) };
+    const filter = req.user.role === "admin" ? {} : { userId: new ObjectId(req.user.id) };
     const tasks = await db.collection(collectionName).find(filter).toArray();
     res.status(200).json({ success: true, message: "Tasks fetched", tasks });
   } catch (err) {
@@ -41,7 +41,7 @@ export const getTask = async (req, res) => {
     const db = await connection();
     const { id } = req.params;
     const filter = { _id: new ObjectId(id) };
-    if (req.user.role !== "admin") filter.userId = new ObjectId(req.user._id);
+    if (req.user.role !== "admin") filter.userId = new ObjectId(req.user.id);
 
     const task = await db.collection(collectionName).findOne(filter);
     if (!task) return res.status(404).json({ success: false, message: "Task not found" });
@@ -65,7 +65,7 @@ export const updateTask = async (req, res) => {
     if (status) update.$set.status = status;
 
     const filter = { _id: new ObjectId(id) };
-    if (req.user.role !== "admin") filter.userId = new ObjectId(req.user._id);
+    if (req.user.role !== "admin") filter.userId = new ObjectId(req.user.id);
 
     const result = await db.collection(collectionName).updateOne(filter, update);
     if (result.modifiedCount === 0) return res.status(404).json({ success: false, message: "Task not found or no changes made" });
@@ -83,7 +83,7 @@ export const deleteTask = async (req, res) => {
     const db = await connection();
     const { id } = req.params;
     const filter = { _id: new ObjectId(id) };
-    if (req.user.role !== "admin") filter.userId = new ObjectId(req.user._id);
+    if (req.user.role !== "admin") filter.userId = new ObjectId(req.user.id);
 
     const result = await db.collection(collectionName).deleteOne(filter);
     if (result.deletedCount === 0) return res.status(404).json({ success: false, message: "Task not found" });
