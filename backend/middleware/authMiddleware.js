@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret-code";
 
-export const auth = (req, res, next) => {
+export const verifyJWTToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -32,6 +32,13 @@ export const isAdmin = (req, res, next) => {
       success: false,
       message: "Access denied (Admin only)",
     });
+  }
+  next();
+};
+
+export const authorizeRoles = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ success: false, message: "Forbidden: Access denied" });
   }
   next();
 };
