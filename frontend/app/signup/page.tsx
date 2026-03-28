@@ -4,16 +4,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, ChangeEvent } from "react";
 
-// ✅ Types
 interface UserData {
   name: string;
   email: string;
   password: string;
+  role: string;  
 }
 
 interface ApiResponse {
   success: boolean;
   message?: string;
+  role?: string;
+  token?: string;
 }
 
 export default function SignUp() {
@@ -23,19 +25,17 @@ export default function SignUp() {
     name: "",
     email: "",
     password: "",
+    role: "user",  
   });
 
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
 
-  const API =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
-  // ✅ Typed change handler (NO ANY)
-  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
-
     setUserData((prev) => ({
       ...prev,
       [name]: value,
@@ -48,12 +48,11 @@ export default function SignUp() {
   };
 
   const handleSignUp = async (): Promise<void> => {
-    if (loading) return; // ✅ prevent spam clicks
+    if (loading) return;
 
     setErrorMessage("");
     setSuccessMessage("");
 
-    // ✅ Validation
     if (!userData.name || !userData.email || !userData.password) {
       setErrorMessage("All fields are required");
       return;
@@ -74,9 +73,7 @@ export default function SignUp() {
     try {
       const res = await fetch(`${API}/api/v1/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(userData),
       });
@@ -89,6 +86,13 @@ export default function SignUp() {
 
       if (data.success) {
         setSuccessMessage("Account created successfully 🚀");
+
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+        if (data.role) {
+          localStorage.setItem("role", data.role);
+        }
 
         setTimeout(() => {
           router.push("/dashboard");
@@ -113,21 +117,13 @@ export default function SignUp() {
 
       <div className="min-h-[calc(100vh-64px)] pt-16 flex items-center justify-center bg-linear-to-r from-blue-500 to-gray-500">
         <div className="w-full max-w-md bg-white text-black rounded-lg p-8 shadow-md">
-
-          <h1 className="text-2xl text-center font-bold mb-3">
-            Register Here
-          </h1>
+          <h1 className="text-2xl text-center font-bold mb-3">Register Here</h1>
 
           {errorMessage && (
-            <p className="text-red-500 text-sm text-center mb-2">
-              {errorMessage}
-            </p>
+            <p className="text-red-500 text-sm text-center mb-2">{errorMessage}</p>
           )}
-
           {successMessage && (
-            <p className="text-green-600 text-sm text-center mb-2">
-              {successMessage}
-            </p>
+            <p className="text-green-600 text-sm text-center mb-2">{successMessage}</p>
           )}
 
           <div className="mb-4">
@@ -166,6 +162,19 @@ export default function SignUp() {
             />
           </div>
 
+          <div className="mb-4">
+            <label>Role</label>
+            <select
+              name="role"
+              value={userData.role}
+              onChange={handleChange}
+              className="w-full h-10 border rounded-md px-3"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
           <button
             onClick={handleSignUp}
             disabled={loading}
@@ -181,7 +190,6 @@ export default function SignUp() {
               Already have an account? Login
             </Link>
           </div>
-
         </div>
       </div>
     </>

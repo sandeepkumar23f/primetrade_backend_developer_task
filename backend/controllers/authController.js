@@ -40,6 +40,7 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       token,
+      role: role || "user"
     });
 
   } catch (error) {

@@ -5,7 +5,6 @@ import verifyJWTToken from "../middleware/verifyJWTToken.js";
 
 const router = express.Router();
 
-// API versioning
 router.post("/", verifyJWTToken, createTask);
 router.get("/", verifyJWTToken, getTasks);
 router.get("/:id", verifyJWTToken, getTask);

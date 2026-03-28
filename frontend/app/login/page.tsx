@@ -15,9 +15,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  
-  const API =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+
+  const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserData({
@@ -61,11 +60,14 @@ export default function Login() {
         if (result.token) {
           localStorage.setItem("token", result.token);
         }
+        if (result.role) {
+          localStorage.setItem("role", result.role);
+        }
 
         setSuccessMessage("Login successful Redirecting...");
 
         setTimeout(() => {
-          router.push("/dashboard"); 
+          router.push("/dashboard");
         }, 1000);
       } else {
         setErrorMessage(result.message || "Invalid email or password");
@@ -86,16 +88,19 @@ export default function Login() {
 
       <div className="min-h-[calc(100vh-64px)] pt-16 flex items-center justify-center bg-linear-to-r from-blue-500 to-gray-500">
         <div className="w-full max-w-md bg-white text-black rounded-lg p-8 shadow-md">
-
           <h1 className="text-2xl text-center font-bold mb-3">
             Login to your account
           </h1>
 
           {errorMessage && (
-            <p className="text-red-500 text-sm text-center mb-2">{errorMessage}</p>
+            <p className="text-red-500 text-sm text-center mb-2">
+              {errorMessage}
+            </p>
           )}
           {successMessage && (
-            <p className="text-green-600 text-sm text-center mb-2">{successMessage}</p>
+            <p className="text-green-600 text-sm text-center mb-2">
+              {successMessage}
+            </p>
           )}
 
           <div className="mb-4">
@@ -138,13 +143,11 @@ export default function Login() {
 
           <p className="text-center text-gray-400 my-4">OR</p>
 
-
           <div className="flex items-center justify-center mt-4">
             <Link href="/signup" className="text-blue-500 hover:underline">
               Don&apos;t have an account? Sign Up
             </Link>
           </div>
-
         </div>
       </div>
     </>
