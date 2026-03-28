@@ -1,15 +1,10 @@
-import express from "express";
-
+import app from "./app.js";
 import dotenv from "dotenv";
-dotenv.config();
-const app = express();
-const port = process.env.PORT || 5000;
-app.use(express.json());
 
-app.get("/",(req,res)=>{
-    res.json("Hello primetrade.ai")
-})
-// Start server
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+dotenv.config();
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
